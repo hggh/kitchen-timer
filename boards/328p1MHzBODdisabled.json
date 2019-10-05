@@ -1,0 +1,27 @@
+{
+  "build": {
+    "core": "arduino",
+    "extra_flags": "-DARDUINO_AVR_PRO",
+    "f_cpu": "1000000L",
+    "mcu": "atmega328p",
+    "variant": "standard"
+  },
+  "frameworks": [
+    "arduino"
+  ],
+  "fuses": {
+    "efuse": "0xFF",
+    "hfuse": "0xD9",
+    "lfuse": "0x62"
+  },
+  "name": "Arduino ATmega328 (3.3V, 1 MHz BOD Disabled)",
+  "upload": {
+    "maximum_ram_size": 2048,
+    "maximum_size": 30720,
+    "protocol": "arduino",
+    "require_upload_port": true,
+    "speed": 57600
+  },
+  "url": "http://arduino.cc/en/Main/ArduinoBoardProMini",
+  "vendor": "Arduino"
+}
