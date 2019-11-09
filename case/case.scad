@@ -1,9 +1,16 @@
+
+BOX_SIZE_X = 85;
+BOX_SIZE_LOWER_Y = 28;
+
+DISPLAY_POS_X = 10;
+DISPLAY_SIZE_X = 30.5;
+
 module back_inlay() {
     difference() {
-            cube([70-4, 25-4, 21]);
+            cube([BOX_SIZE_X-4, 25-4, 21]);
             rotate([55, 0, 0]) {
                 translate([-1, 0, 0]) {
-                    cube([72, 50, 60]);
+                    cube([BOX_SIZE_X+2, 50, 60]);
                 }
             }
         }
@@ -11,19 +18,19 @@ module back_inlay() {
 
 
 module back_top() {
-    cube([70, 25, 25]);
+    cube([BOX_SIZE_X, 25, 25]);
     translate([0, 0, 25]) {
         difference() {
-            cube([70, 25, 25]);
+            cube([BOX_SIZE_X, 25, 25]);
             rotate([55, 0, 0]) {
                 translate([-1, 0, 0]) {
-                    cube([82, 50, 25]);
+                    cube([BOX_SIZE_X+2, 50, 25]);
                 }
             }
             // display
-            translate([9, 25/2, 0]) {
+            translate([DISPLAY_POS_X, 25/2, 0]) {
                 rotate([55, 0, 0]) {
-                    cube([30.5, 14.5, 20]);
+                    cube([DISPLAY_SIZE_X, 14.5, 20]);
                 }
             }
             translate([2, 2, 0]) {
@@ -46,18 +53,23 @@ module mutter_halter() {
 }
 
 union() {
+    BUTTON_SPACE_X = (BOX_SIZE_X - DISPLAY_SIZE_X - DISPLAY_POS_X) / 2;
+    BUTTON_POS_X = DISPLAY_POS_X + DISPLAY_SIZE_X + BUTTON_SPACE_X;
+
     difference() {
-        cube([70, 28, 25]);
+        cube([BOX_SIZE_X, BOX_SIZE_LOWER_Y, 25]);
         translate([2, 2, -1]) {
-            cube([70-4, 28, 25-1]);
+            cube([BOX_SIZE_X-4, 28, 25-1]);
         }
-        translate([54.65, 28/2, 25]) {
+        translate([BUTTON_POS_X, 28/2, 25]) {
             rotate([0, 0, 90]) {
                 cylinder(d=7.5, h=20, center=true, $fn=80);
             }
         }
     }
-    translate([54.65, 28/2, 25-2-(4/2)]) {
+    
+    
+    translate([BUTTON_POS_X, 28/2, 25-2-(4/2)]) {
         difference() {
             cube([16, 16, 4], center=true);
             cylinder(d=7.5, h=60, center=true, $fn=80);
@@ -70,10 +82,10 @@ union() {
         difference() {
             back_top();
             translate([2, -2, -1]) {
-                cube([70-4, 25, 25]);
+                cube([BOX_SIZE_X-4, 25, 25]);
             }
             translate([2, 4, 23]) {
-                cube([70-4, 19, 4]);
+                cube([BOX_SIZE_X-4, 19, 4]);
             }
 
         }
@@ -82,13 +94,13 @@ union() {
     translate([2, 2, 2]) {
         mutter_halter();
     }
-    translate([70-2-7, 2, 2]) {
+    translate([BOX_SIZE_X-2-7, 2, 2]) {
         mutter_halter();
     }
     translate([2, 28+25-2-7, 2]) {
         mutter_halter();
     }
-    translate([70-2-7, 28+25-2-7, 2]) {
+    translate([BOX_SIZE_X-2-7, 28+25-2-7, 2]) {
         mutter_halter();
     }
     
@@ -96,7 +108,7 @@ union() {
 
 
 // Bodenplatte
-translate([80, 2, -1.2]) {
+translate([90, 2, -1.2]) {
     cube([70-4 - 0.5, 28+25-4 - 0.5, 1.2]);
     translate([2, 2, 2]) {
         cylinder(d=3.2, h=2, $fn=80);
