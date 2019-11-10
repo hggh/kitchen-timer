@@ -1,4 +1,4 @@
-
+include <mico_usb_breakout.scad>;
 BOX_SIZE_X = 85;
 BOX_SIZE_LOWER_Y = 28;
 
@@ -103,7 +103,9 @@ union() {
     translate([BOX_SIZE_X-2-7, 28+25-2-7, 2]) {
         mutter_halter();
     }
-    
+    translate([BOX_SIZE_X - 6 - 2, 28 + 25 - 2, 0]) {
+        rotate([90, 180, 90]) usb_breakout();
+    }
 }
 
 
