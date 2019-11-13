@@ -1,13 +1,14 @@
 include <mico_usb_breakout.scad>;
-BOX_SIZE_X = 85;
+BOX_SIZE_X = 90;
 BOX_SIZE_LOWER_Y = 28;
+BOX_SIZE_BACK_LOWER_Y = 30;
 
 DISPLAY_POS_X = 10;
 DISPLAY_SIZE_X = 30.5;
 
 module back_inlay() {
     difference() {
-            cube([BOX_SIZE_X-4, 25-4, 21]);
+            cube([BOX_SIZE_X-4, BOX_SIZE_BACK_LOWER_Y-4, 21]);
             rotate([55, 0, 0]) {
                 translate([-1, 0, 0]) {
                     cube([BOX_SIZE_X+2, 50, 60]);
@@ -18,10 +19,10 @@ module back_inlay() {
 
 
 module back_top() {
-    cube([BOX_SIZE_X, 25, 25]);
+    cube([BOX_SIZE_X, BOX_SIZE_BACK_LOWER_Y, 25]);
     translate([0, 0, 25]) {
         difference() {
-            cube([BOX_SIZE_X, 25, 25]);
+            cube([BOX_SIZE_X, BOX_SIZE_BACK_LOWER_Y, 25]);
             rotate([55, 0, 0]) {
                 translate([-1, 0, 0]) {
                     cube([BOX_SIZE_X+2, 50, 25]);
@@ -82,10 +83,13 @@ union() {
         difference() {
             back_top();
             translate([2, -2, -1]) {
-                cube([BOX_SIZE_X-4, 25, 25]);
+                cube([BOX_SIZE_X-4, BOX_SIZE_BACK_LOWER_Y, 25]);
             }
             translate([2, 4, 23]) {
-                cube([BOX_SIZE_X-4, 19, 4]);
+                cube([BOX_SIZE_X-4, 24, 4]);
+            }
+            translate([BOX_SIZE_X-8, 56-28, 22]) {
+                cube([6, 3, 15]);
             }
 
         }
@@ -97,16 +101,17 @@ union() {
     translate([BOX_SIZE_X-2-7, 2, 2]) {
         mutter_halter();
     }
-    translate([2, 28+25-2-7, 2]) {
+    translate([2, 28+BOX_SIZE_BACK_LOWER_Y-2-7, 2]) {
         mutter_halter();
     }
-    translate([BOX_SIZE_X-2-7, 28+25-2-7, 2]) {
+    translate([BOX_SIZE_X-2-7, 28+BOX_SIZE_BACK_LOWER_Y-2-7, 2]) {
         mutter_halter();
     }
-    translate([BOX_SIZE_X - 6 - 2, 28 + 25 - 2, 0]) {
+    translate([BOX_SIZE_X - 6 - 2, 28 + BOX_SIZE_BACK_LOWER_Y - 2, 32]) {
         rotate([90, 180, 90]) usb_breakout();
     }
 }
+
 
 
 // Bodenplatte
