@@ -88,8 +88,8 @@ union() {
             translate([2, 4, 23]) {
                 cube([BOX_SIZE_X-4, 24, 4]);
             }
-            translate([BOX_SIZE_X-8, 56-28, 22]) {
-                cube([6, 3, 15]);
+            translate([BOX_SIZE_X-8, 56-28, 22 - 4]) {
+                cube([6, 4, 15]);
             }
 
         }
