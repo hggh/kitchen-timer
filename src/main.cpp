@@ -5,7 +5,7 @@
 #include <TM1637Display.h>
 #include <Bounce2.h>
 
-#define BUZZER_PIN 10
+#define BUZZER_PIN 6
 #define RT_SW 2
 #define RT_CLK 3
 #define RT_DT 7
@@ -35,13 +35,13 @@ void enable_display() {
 
 void setup_timer() {
   noInterrupts();
-  TCCR1A = 0;
-  TCCR1B = 0;
-  OCR1A = 15624;
-  TCCR1B |= _BV(WGM12);
-  TCCR1B |= _BV(CS10);
-  TCCR1B |= _BV(CS11);
-  TIMSK1 |= _BV(OCIE1A);
+  GTCCR |= (1 << TSM) | (1 << PSRASY);
+  ASSR |= (1 << AS2);
+  TCCR2A = (1 << WGM21);
+  TCCR2B |= (1 << CS22) | (1 << CS21);
+  OCR2A = 128 - 1; // 1s
+  TIMSK2 |= (1<<OCIE2A);
+  GTCCR &= ~(1 << TSM);
   interrupts();
 }
 
@@ -63,7 +63,7 @@ void timer_up() {
   timer_secs_last_pos = timer_secs;
   timer_secs += 30;
 
-  if (timer_secs > 3601) {
+  if (timer_secs > 5401) {
     timer_secs = 30;
   }
 }
@@ -78,7 +78,7 @@ void timer_down() {
   timer_secs -= 30;
 
   if (timer_secs == 0) {
-    timer_secs = 3600;
+    timer_secs = 5400;
   }
 }
 
@@ -105,20 +105,21 @@ void rt_int_clk() {
 
 void disable_timer() {
   noInterrupts();
-  TCCR1B = 0;
-  TIMSK1 = 0;
+  GTCCR |= (1 << TSM) | (1 << PSRASY);
+  TCCR2A = 0;
+  TCCR2B = 0;
   interrupts();
 }
 
-ISR(TIMER1_COMPA_vect) {
+ISR(TIMER2_COMPA_vect) {
+  TCCR2B = TCCR2B;
   timer_secs_last_pos = timer_secs;
   timer_secs--;
+
+  while(ASSR & ((1<<TCN2UB) | (1<<OCR2AUB) | (1<<OCR2BUB) | (1<<TCR2AUB) | (1<<TCR2BUB)));
 }
 
 void play_sound() {
-  tone(BUZZER_PIN, 100);
-  delay(10);
-  noTone(BUZZER_PIN);
 }
 
 void setup() {
@@ -131,7 +132,7 @@ void setup() {
   pinMode(RT_CLK, INPUT_PULLUP);
   pinMode(RT_DT, INPUT_PULLUP);
   pinMode(RT_SW, INPUT_PULLUP);
-  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(BUZZER_PIN, INPUT);
 
   debouncer.attach(RT_SW);
   debouncer.interval(5);
