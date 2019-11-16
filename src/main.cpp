@@ -22,6 +22,7 @@ volatile uint8_t clk_last = 0;
 volatile short timer_secs_last_pos = 99;
 volatile short timer_secs = 300;
 volatile short timer_active = 0;
+volatile short play_sound_status = 0;
 
 int secondsToDisplay(int i) {
   int h = i / 60;
@@ -86,6 +87,10 @@ void rt_int_sw() {
   // just wake up
   debouncer.update();
   wakeup_time = millis();
+  // if alarm is current running, abort it
+  if (play_sound_status == 1) {
+    play_sound_status = 2;
+  }
 }
 
 void rt_int_clk() {
@@ -119,7 +124,43 @@ ISR(TIMER2_COMPA_vect) {
   while(ASSR & ((1<<TCN2UB) | (1<<OCR2AUB) | (1<<OCR2BUB) | (1<<TCR2AUB) | (1<<TCR2BUB)));
 }
 
+
+void play(short pin, uint16_t frequency, uint16_t duration) {
+  unsigned long start_time = millis();
+  unsigned long halfPeriod = 1000000L / frequency / 2;
+  pinMode(pin, OUTPUT);
+  while (millis() - start_time < duration) {
+    digitalWrite(pin, HIGH);
+    delayMicroseconds(halfPeriod);
+
+    digitalWrite(pin, LOW);
+    delayMicroseconds(halfPeriod);
+
+  }
+  pinMode(pin,INPUT);
+}
+
+
 void play_sound() {
+  play_sound_status = 1;
+  short frequency = 3100;
+  for (short i = 0; i < 40; i++) {
+    play(BUZZER_PIN, frequency, 750);
+    if (play_sound_status == 2) {
+      // button pressed, abort sound
+      break;
+    }
+    delay(500);
+    if (play_sound_status == 2) {
+      // button pressed, abort sound
+      break;
+    }
+
+    if (frequency < 4500) {
+      frequency += 200;
+    }
+  }
+  play_sound_status = 0;
 }
 
 void setup() {
@@ -165,10 +206,11 @@ void loop() {
   if (timer_active == 1) {
     if (timer_secs == 0) {
       disable_timer();
+      display.showNumberDecEx(0, 64, true);
+      timer_active = 0;
       timer_secs = 300;
       play_sound();
       goto_sleep();
-      timer_active = 0;
     }
   }
   if (timer_secs_last_pos != timer_secs) {
