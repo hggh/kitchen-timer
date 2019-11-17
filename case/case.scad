@@ -85,6 +85,28 @@ union() {
             translate([2, -2, -1]) {
                 cube([BOX_SIZE_X-4, BOX_SIZE_BACK_LOWER_Y, 25]);
             }
+            // buzzer
+            translate([10, 30, 42]) {
+                rotate([90, 0, 0]) { 
+                    cylinder(d=1.2, h=4, $fn=80, center=true);
+                }
+            }
+            translate([7.5, 30, 42]) {
+                rotate([90, 0, 0]) { 
+                    cylinder(d=1.2, h=4, $fn=80, center=true);
+                }
+            }
+            translate([8.75, 30, 44]) {
+                rotate([90, 0, 0]) { 
+                    cylinder(d=1.2, h=4, $fn=80, center=true);
+                }
+            }
+            translate([8.75, 30, 40.5]) {
+                rotate([90, 0, 0]) { 
+                    cylinder(d=1.2, h=4, $fn=80, center=true);
+                }
+            }
+            
             translate([2, 4, 23]) {
                 cube([BOX_SIZE_X-4, 24, 4]);
             }
