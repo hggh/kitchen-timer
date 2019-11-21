@@ -1,3 +1,4 @@
 (fp_lib_table
-  (lib (name arduino)(type KiCad)(uri ${KIPRJMOD}/arduino.pretty)(options "")(descr ""))
+  (lib (name pcb)(type KiCad)(uri /home/jonas/entwicklung/kitchen-timer/pcb)(options "")(descr ""))
+  (lib (name buzzer)(type KiCad)(uri /home/jonas/entwicklung/kicad-libraries/buzzer.pretty)(options "")(descr ""))
 )
