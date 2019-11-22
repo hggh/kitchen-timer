@@ -20,6 +20,7 @@ volatile long wakeup_time = 0;
 volatile uint8_t clk_current = 0;
 volatile uint8_t clk_last = 0;
 
+short timer_secs_last_start = 300;
 volatile short timer_secs_last_pos = 99;
 volatile short timer_secs = 300;
 volatile short timer_active = 0;
@@ -112,8 +113,8 @@ void rt_int_clk() {
   clk_last = clk_current;
   clk_current = digitalRead(RT_CLK);
 
-  if(clk_last != clk_current) {
-    if(digitalRead(RT_DT) != clk_current) {
+  if (clk_last == LOW && clk_current == HIGH) {
+    if (digitalRead(RT_DT) == LOW) {
       timer_up();
     }
     else {
@@ -211,11 +212,12 @@ void loop() {
       // if timer is active and button is pressed longer, reset timer
       disable_timer();
       timer_active = 0;
-      timer_secs = 300;
+      timer_secs = timer_secs_last_start;
     }
   }
   if (debouncer.fell() && timer_active == 0) {
     // if button is pressed and timer is not active, start countdown
+    timer_secs_last_start = timer_secs;
     timer_active = 1;
     setup_timer();
   }
@@ -224,7 +226,7 @@ void loop() {
       disable_timer();
       display.showNumberDecEx(0, 64, true);
       timer_active = 0;
-      timer_secs = 300;
+      timer_secs = timer_secs_last_start;
       play_sound();
       goto_sleep();
     }
