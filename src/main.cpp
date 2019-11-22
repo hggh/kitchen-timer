@@ -11,6 +11,7 @@
 #define RT_DT 7
 #define DISPLAY_CLK 8
 #define DISPLAY_DIO 9
+#define ENABLE_LCD A0
 
 TM1637Display display(DISPLAY_CLK, DISPLAY_DIO);
 Bounce debouncer = Bounce();
@@ -23,6 +24,7 @@ volatile short timer_secs_last_pos = 99;
 volatile short timer_secs = 300;
 volatile short timer_active = 0;
 volatile short play_sound_status = 0;
+volatile short display_enabled = 0;
 
 int secondsToDisplay(int i) {
   int h = i / 60;
@@ -31,7 +33,16 @@ int secondsToDisplay(int i) {
 }
 
 void enable_display() {
-  display.setBrightness(3);
+  if (display_enabled != 1) {
+    digitalWrite(ENABLE_LCD, HIGH);
+    display.setBrightness(3);
+  }
+}
+
+void disable_display() {
+  if (display_enabled != 0) {
+    digitalWrite(ENABLE_LCD, LOW);
+  }
 }
 
 void setup_timer() {
@@ -48,6 +59,7 @@ void setup_timer() {
 
 void goto_sleep() {
   display.clear();
+  disable_display();
 
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   sleep_enable();
@@ -85,6 +97,7 @@ void timer_down() {
 
 void rt_int_sw() {
   // just wake up
+  enable_display();
   debouncer.update();
   wakeup_time = millis();
   // if alarm is current running, abort it
@@ -94,6 +107,7 @@ void rt_int_sw() {
 }
 
 void rt_int_clk() {
+  enable_display();
   wakeup_time = millis();
   clk_last = clk_current;
   clk_current = digitalRead(RT_CLK);
@@ -175,13 +189,15 @@ void setup() {
   pinMode(RT_SW, INPUT_PULLUP);
   pinMode(BUZZER_PIN, INPUT);
 
+  pinMode(ENABLE_LCD, OUTPUT);
+  enable_display();
+
   debouncer.attach(RT_SW);
   debouncer.interval(5);
 
   attachInterrupt(digitalPinToInterrupt(RT_CLK), rt_int_clk, CHANGE);
   attachInterrupt(digitalPinToInterrupt(RT_SW), rt_int_sw, FALLING);
 
-  enable_display();
   wakeup_time = millis();
 }
 
