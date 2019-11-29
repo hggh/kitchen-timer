@@ -8,6 +8,30 @@ DISPLAY_POS_X = 10;
 DISPLAY_SIZE_X = 30.3;
 
 
+
+
+
+module floor_plate() {
+    size_x = BOX_SIZE_X - 2;
+    size_y = BOX_SIZE_LOWER_Y + BOX_SIZE_BACK_LOWER_Y - 2;
+    difference() {
+        translate([0.5, 0.5, 0]) cube([size_x - 1, size_y - 1, 1.2]);
+        translate([3.5, 3.5, -1 ]) cylinder(d=3.2, h=3, $fn=80);
+        translate([3.5, size_y - 3.5, -1 ]) cylinder(d=3.2, h=3, $fn=80);
+        translate([size_x-3.5, 3.5, -1 ]) cylinder(d=3.2, h=3, $fn=80);
+        translate([size_x-3.5, size_y - 3.5, -1 ]) cylinder(d=3.2, h=3, $fn=80);
+
+        translate([-0.1, BOX_SIZE_LOWER_Y-10 -1.5, -1]) {
+            cube([2.6, 23, 3]);
+        }
+
+        translate([size_x-2.5, BOX_SIZE_LOWER_Y-10 -1.5, -1]) {
+            cube([2.6, 23, 3]);
+        }
+    }
+}
+
+
 module back_inlay() {
     difference() {
             cube([BOX_SIZE_X-4, BOX_SIZE_BACK_LOWER_Y-4, 21]);
@@ -174,6 +198,10 @@ module front() {
 
 translate([0, -80, 0]) {
     front();
+}
+
+translate([0, 80, 0]) {
+    floor_plate();
 }
 
 
