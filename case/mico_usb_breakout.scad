@@ -10,10 +10,12 @@ module usb_breakout() {
     union() {
         difference() {
             translate([0, -1.5, 0]) cube([17, 16, 6]);
-            cube([USB_PCB_SIZE_X, USB_PCB_SIZE_Y, USB_PCB_SIZE_Z]);
+            translate([-0.1, 0, -0.1]) {
+                cube([USB_PCB_SIZE_X + 0.1, USB_PCB_SIZE_Y, USB_PCB_SIZE_Z + 0.1]);
+            }
             BOX_A = USB_PCB_SIZE_Y / 2 - USB_CONN_Y /2;
-            translate([0, BOX_A, USB_PCB_SIZE_Z]) {
-                cube([USB_CONN_X, USB_CONN_Y, USB_CONN_Z]);
+            translate([-0.1, BOX_A, USB_PCB_SIZE_Z - 0.1]) {
+                cube([USB_CONN_X + 0.1, USB_CONN_Y, USB_CONN_Z + 0.1]);
             }
         }
         translate([7.5, 2, -0.5]) {
