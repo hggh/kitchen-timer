@@ -1,7 +1,6 @@
 # kitchen-timer
 
 
-
 ## parts
 
  * Atmel 328p (1Mhz, BOD disabled)
@@ -11,3 +10,6 @@
  * TP4056 with DW01-P
  * LiPo 18650
  * buzzer
+
+
+![case](https://raw.githubusercontent.com/hggh/kitchen-timer/master/pics/case.jpg)
