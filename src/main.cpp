@@ -158,7 +158,7 @@ void play(short pin, uint16_t frequency, uint16_t duration) {
 
 void play_sound() {
   play_sound_status = 1;
-  short frequency = 3100;
+  short frequency = 3600;
   for (short i = 0; i < 40; i++) {
     play(BUZZER_PIN, frequency, 750);
     if (play_sound_status == 2) {
@@ -194,7 +194,7 @@ void setup() {
   enable_display();
 
   debouncer.attach(RT_SW);
-  debouncer.interval(5);
+  debouncer.interval(25);
 
   attachInterrupt(digitalPinToInterrupt(RT_CLK), rt_int_clk, CHANGE);
   attachInterrupt(digitalPinToInterrupt(RT_SW), rt_int_sw, FALLING);
@@ -207,7 +207,7 @@ void loop() {
   if (debouncer.fell()) {
     buttonPressTimeStamp = millis();
   }
-  if (debouncer.read() == LOW && millis() - buttonPressTimeStamp >= 200) {
+  if (debouncer.read() == LOW && millis() - buttonPressTimeStamp >= 500) {
     if (timer_active == 1) {
       // if timer is active and button is pressed longer, reset timer
       disable_timer();
@@ -217,6 +217,7 @@ void loop() {
   }
   if (debouncer.fell() && timer_active == 0) {
     // if button is pressed and timer is not active, start countdown
+    play(BUZZER_PIN, 3000, 100);
     timer_secs_last_start = timer_secs;
     timer_active = 1;
     setup_timer();
