@@ -5,6 +5,8 @@
 #include <TM1637Display.h>
 #include <Bounce2.h>
 
+#include <Voltage.h>
+
 #define BUZZER_PIN 6
 #define RT_SW 2
 #define RT_CLK 3
@@ -15,6 +17,16 @@
 
 TM1637Display display(DISPLAY_CLK, DISPLAY_DIO);
 Bounce debouncer = Bounce();
+Voltage voltage;
+
+const uint8_t LOW_BATT[] = {
+  SEG_D | SEG_E | SEG_F,
+  SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F,
+  0x00,
+  SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F | SEG_G
+};
+const double battery_low = 2.9;
+
 unsigned long buttonPressTimeStamp;
 volatile long wakeup_time = 0;
 volatile uint8_t clk_current = 0;
@@ -179,8 +191,7 @@ void play_sound() {
 }
 
 void setup() {
-  ADCSRA &=(~(1 << ADEN));
-  power_adc_disable();
+  voltage.init();
   power_usart0_disable();
   power_spi_disable();
   power_twi_disable();
@@ -216,6 +227,14 @@ void loop() {
     }
   }
   if (debouncer.fell() && timer_active == 0) {
+    // check battery level before going to timer
+    if (battery_low > (double)voltage.read()) {
+      display.setSegments(LOW_BATT);
+      play(BUZZER_PIN, 2000, 50);
+      delay(500);
+      play(BUZZER_PIN, 2000, 50);
+      delay(500);
+    }
     // if button is pressed and timer is not active, start countdown
     play(BUZZER_PIN, 3000, 100);
     timer_secs_last_start = timer_secs;
