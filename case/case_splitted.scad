@@ -1,4 +1,5 @@
-include <mico_usb_breakout.scad>;
+use <hggh/mico_usb_breakout_holder.scad>
+
 BOX_SIZE_X = 96;
 BOX_SIZE_LOWER_Y = 28;
 BOX_SIZE_BACK_LOWER_Y = 35;
@@ -129,7 +130,7 @@ module back() {
             mutter_halter();
         }
         translate([BOX_SIZE_X - 6 - 2, BOX_SIZE_BACK_LOWER_Y - 2, 32]) {
-            rotate([90, 180, 90]) usb_breakout();
+            rotate([90, 180, 90]) mico_usb_breakout_holder();
         }
     }
 }
