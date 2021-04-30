@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <EEPROM.h>
 #include <avr/power.h>
 #include <avr/sleep.h>
 
@@ -7,6 +8,8 @@
 
 #include <Voltage.h>
 
+#include <Menu7Seg.h>
+
 #define BUZZER_PIN 6
 #define RT_SW 2
 #define RT_CLK 3
@@ -14,10 +17,12 @@
 #define DISPLAY_CLK 8
 #define DISPLAY_DIO 9
 #define ENABLE_LCD A0
+#define EEPROM_ADDRESS_ALARM_TIME 0
 
 TM1637Display display(DISPLAY_CLK, DISPLAY_DIO);
 Bounce debouncer = Bounce();
 Voltage voltage;
+Menu7Seg menu = Menu7Seg();
 
 const uint8_t LOW_BATT[] = {
   SEG_D | SEG_E | SEG_F,
@@ -39,11 +44,15 @@ volatile short timer_active = 0;
 volatile short play_sound_status = 0;
 volatile short display_enabled = 0;
 
+uint8_t setting_alarm_time_seconds = 20;
+bool button_long_toggle = false;
+
 int secondsToDisplay(int i) {
   int h = i / 60;
 
   return (h * 100) + (i - (h * 60));
 }
+
 
 void enable_display() {
   if (display_enabled != 1) {
@@ -85,6 +94,10 @@ void timer_up() {
   if (timer_active == 1) {
     return;
   }
+  if (menu.active()) {
+    menu.up();
+    return;
+  }
 
   timer_secs_last_pos = timer_secs;
   timer_secs += 30;
@@ -99,6 +112,10 @@ void timer_down() {
   if (timer_active == 1) {
     return;
   }
+  if (menu.active()) {
+    menu.down();
+    return;
+  }
 
   timer_secs_last_pos = timer_secs;
   timer_secs -= 30;
@@ -109,6 +126,10 @@ void timer_down() {
 }
 
 void rt_int_sw() {
+  if (menu.active()) {
+    // if menu is active, just do nothing
+    return;
+  }
   // just wake up
   enable_display();
   debouncer.update();
@@ -171,7 +192,7 @@ void play(short pin, uint16_t frequency, uint16_t duration) {
 void play_sound() {
   play_sound_status = 1;
   short frequency = 3600;
-  for (short i = 0; i < 40; i++) {
+  for (short i = 0; i < (setting_alarm_time_seconds * 2); i++) {
     play(BUZZER_PIN, frequency, 750);
     if (play_sound_status == 2) {
       // button pressed, abort sound
@@ -191,6 +212,11 @@ void play_sound() {
 }
 
 void setup() {
+  // read settings from EEPROM
+  EEPROM.get(EEPROM_ADDRESS_ALARM_TIME, setting_alarm_time_seconds);
+  if (setting_alarm_time_seconds > 20 || setting_alarm_time_seconds == 0) {
+    setting_alarm_time_seconds = 20;
+  }
   voltage.init();
   power_usart0_disable();
   power_spi_disable();
@@ -211,22 +237,46 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(RT_SW), rt_int_sw, FALLING);
 
   wakeup_time = millis();
-}
 
+  menu.init(&debouncer, &display, setting_alarm_time_seconds);
+}
 void loop() {
   debouncer.update();
   if (debouncer.fell()) {
     buttonPressTimeStamp = millis();
+    button_long_toggle = true;
   }
-  if (debouncer.read() == LOW && millis() - buttonPressTimeStamp >= 500) {
+  if (debouncer.read() == LOW && millis() - buttonPressTimeStamp >= 500 && button_long_toggle == true) {
+    // if button is hold too long only do one action
+    button_long_toggle = false;
     if (timer_active == 1) {
       // if timer is active and button is pressed longer, reset timer
       disable_timer();
       timer_active = 0;
       timer_secs = timer_secs_last_start;
     }
+    else {
+      if (menu.active() == false) {
+        // if timer is not active and we have a long press goto menu
+        menu.enable();
+      }
+      else {
+        // if timer is not active and we have a long press and we are inside the menu goto normal mode
+        menu.disable();
+        // save settings into eeprom
+        setting_alarm_time_seconds = menu.get_alarm_timer_seconds();
+        EEPROM.update(EEPROM_ADDRESS_ALARM_TIME, setting_alarm_time_seconds);
+
+        display.showNumberDecEx(secondsToDisplay(timer_secs), 64, false);
+      }
+    }
+    return;
   }
-  if (debouncer.fell() && timer_active == 0) {
+  if (menu.active() == true) {
+    menu.update();
+    return;
+  }
+  if (debouncer.rose() && timer_active == 0 && debouncer.previousDuration() < 400) {
     // check battery level before going to timer
     if (battery_low > (double)voltage.read()) {
       display.setSegments(LOW_BATT);
