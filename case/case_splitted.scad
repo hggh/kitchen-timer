@@ -17,10 +17,10 @@ module floor_plate() {
     size_y = BOX_SIZE_LOWER_Y + BOX_SIZE_BACK_LOWER_Y - 4;
     difference() {
         translate([0.5, 0.5, 0]) cube([size_x - 1, size_y - 1, 2]);
-        translate([3.5, 3.5, -1 ]) cylinder(d=3.2, h=4, $fn=80);
-        translate([3.5, size_y - 3.5, -1 ]) cylinder(d=3.2, h=4, $fn=80);
-        translate([size_x-3.5, 3.5, -1 ]) cylinder(d=3.2, h=4, $fn=80);
-        translate([size_x-3.5, size_y - 3.5, -1 ]) cylinder(d=3.2, h=4, $fn=80);
+        translate([4, 4, -1 ]) cylinder(d=3.2, h=4, $fn=80);
+        translate([4, size_y - 4, -1 ]) cylinder(d=3.2, h=4, $fn=80);
+        translate([size_x-4, 4, -1 ]) cylinder(d=3.2, h=4, $fn=80);
+        translate([size_x-4, size_y - 3.5, -1 ]) cylinder(d=3.2, h=4, $fn=80);
 
         translate([-0.1, BOX_SIZE_LOWER_Y-10 -4.5, -1]) {
             cube([2.6, 26, 4]);
@@ -46,6 +46,9 @@ module back_inlay() {
 
 
 module back_top() {
+    translate([2, 30, 14]) {
+        cube([2, 3, 40]);
+    }
     union() {
         difference() {
             cube([BOX_SIZE_X, BOX_SIZE_BACK_LOWER_Y, BOX_SIZE_LOWER_Z]);
@@ -89,30 +92,9 @@ module back() {
     union() {
         difference() {
             back_top();
-            // buzzer
-            translate([BOX_SIZE_X-10, BOX_SIZE_BACK_LOWER_Y, 42]) {
-                rotate([90, 0, 0]) { 
-                    cylinder(d=1.5, h=4, $fn=80, center=true);
-                }
-            }
-            translate([BOX_SIZE_X-7.5, BOX_SIZE_BACK_LOWER_Y, 42]) {
-                rotate([90, 0, 0]) { 
-                    cylinder(d=1.5, h=4, $fn=80, center=true);
-                }
-            }
-            translate([BOX_SIZE_X-8.75, BOX_SIZE_BACK_LOWER_Y, 44]) {
-                rotate([90, 0, 0]) { 
-                    cylinder(d=1.5, h=4, $fn=80, center=true);
-                }
-            }
-            translate([BOX_SIZE_X-8.75, BOX_SIZE_BACK_LOWER_Y, 40.5]) {
-                rotate([90, 0, 0]) { 
-                    cylinder(d=1.5, h=4, $fn=80, center=true);
-                }
-            }
             // schalter
-            translate([10, BOX_SIZE_LOWER_Z - 2, 42]) {
-                cube([11, 10, 6]);
+            translate([10, BOX_SIZE_LOWER_Z - 2, 41.8]) {
+                cube([11.6, 10, 6.2]);
             }
 
             translate([2, 4, 23]) {
@@ -123,10 +105,10 @@ module back() {
             }
 
         }
-        translate([2, BOX_SIZE_BACK_LOWER_Y- 2 - 7, 3.5]) {
+        translate([2, BOX_SIZE_BACK_LOWER_Y- 2 - 8, 3.5]) {
             mutter_halter();
         }
-        translate([BOX_SIZE_X-2-7, BOX_SIZE_BACK_LOWER_Y-2-7, 3.5]) {
+        translate([BOX_SIZE_X-2-8, BOX_SIZE_BACK_LOWER_Y-2-8, 3.5]) {
             mutter_halter();
         }
         translate([BOX_SIZE_X - 6 - 2, BOX_SIZE_BACK_LOWER_Y - 2, 32]) {
@@ -143,24 +125,24 @@ module back() {
 
 module mutter_halter() {
     difference() {
-        cube([7, 7, 4]);
-        translate([7/2, 7/2, 2]) {
-            cylinder(r = 5.5 / 2 / cos(180 / 6) + 0.05, h=3.1, $fn=6);
+        cube([8, 8, 6]);
+        translate([8/2, 8/2, 2]) {
+            cylinder(r = 5.5 / 2 / cos(180 / 6) + 0.05, h=4.1, $fn=6);
         }
-        translate([7/2, 7/2, -0.01]) {
-            cylinder(d=3.2, h=3, $fn=80);
+        translate([8/2, 8/2, -0.01]) {
+            cylinder(d=3.2, h=3.5, $fn=80);
         }
     }
 }
 
 module mutter_halter_front() {
     difference() {
-        cube([7, 7, 5]);
-        translate([7/2, 7/2, 2]) {
-            cylinder(r = 5.5 / 2 / cos(180 / 6) + 0.05, h=3.1, $fn=6);
+        cube([8, 8, 6]);
+        translate([8/2, 8/2, 2]) {
+            cylinder(r = 5.5 / 2 / cos(180 / 6) + 0.05, h=4.1, $fn=6);
         }
-        translate([7/2, 7/2, -0.01]) {
-            cylinder(d=3.2, h=3, $fn=80);
+        translate([8/2, 8/2, -0.01]) {
+            cylinder(d=3.2, h=3.5, $fn=80);
         }
     }
 }
@@ -200,7 +182,7 @@ module front() {
         translate([2, 2, 3.5]) {
             mutter_halter_front();
         }
-        translate([BOX_SIZE_X-2-7, 2, 3.5]) {
+        translate([BOX_SIZE_X-2-8, 2, 3.5]) {
             mutter_halter_front();
         }
         // klebeflächen
