@@ -1,4 +1,8 @@
 use <hggh/mico_usb_breakout_holder.scad>
+use <hggh/usb_c_breakout_case_holder.scad>
+include <BOSL/constants.scad>
+use <BOSL/shapes.scad>
+
 
 BOX_SIZE_X = 96;
 BOX_SIZE_LOWER_Y = 28;
@@ -200,10 +204,99 @@ translate([0, -80, 0]) {
 }
 
 translate([2.25, 50, -1]) {
-    floor_plate();
+    //floor_plate();
 }
 
 
-back();
+//back();
+//
+// ============================================ NEW
+//
 
+TIMER_SIZE_X = 96;
+TIMER_BACK_SIZE_Y = 37;
+TIMER_BACK_TOP_SIZE_Z = 28;
+
+
+module timer_back_case() {
+    difference() {
+            cube([TIMER_SIZE_X, TIMER_BACK_SIZE_Y, TIMER_BACK_TOP_SIZE_Z]);
+            translate([2, -2, -1]) {
+                cube([BOX_SIZE_X-4, TIMER_BACK_SIZE_Y, TIMER_BACK_TOP_SIZE_Z - 2]);
+                translate([0, 4, 0]) {
+                    cube([TIMER_SIZE_X - 4, TIMER_BACK_SIZE_Y - 4, TIMER_BACK_TOP_SIZE_Z + 2]);
+                }
+            }
+            translate([2, -2, BOX_SIZE_LOWER_Z]) {
+                cube([BOX_SIZE_X-4, BOX_SIZE_BACK_LOWER_Y, 2]);
+            }
+        }
+
+    translate([2, -4,  TIMER_BACK_TOP_SIZE_Z - 4]) {
+        cube([BOX_SIZE_X-4, 6, 2]);
+    }
+    translate([TIMER_SIZE_X/2, TIMER_BACK_SIZE_Y/2, 28]) {
+        union() {
+            rotate([0, 0, 90]) {
+                difference() {
+                    prismoid(
+                        size1=[TIMER_BACK_SIZE_Y, TIMER_SIZE_X],
+                        size2=[15, TIMER_SIZE_X], h=TIMER_BACK_TOP_SIZE_Z,
+                        shift=[11,0]);
+         
+                    prismoid(
+                        size1=[TIMER_BACK_SIZE_Y-4, TIMER_SIZE_X-4],
+                        size2=[15-4, TIMER_SIZE_X-4], h=TIMER_BACK_TOP_SIZE_Z -2,
+                        shift=[11,0]);
+
+                }
+            }
+        }
+    }
+
+}
+
+
+module timer_back() {
+    difference() {
+        timer_back_case();
+        // display cutout
+        translate([DISPLAY_POS_X, BOX_SIZE_LOWER_Z/2, 28]) {
+            rotate([55, 0, 0])
+                cube([DISPLAY_SIZE_X, 14.5, 20]);
+        }
+        // switch cutout
+        translate([10, BOX_SIZE_LOWER_Z - 2, 47.8]) {
+            cube([11.6, 20, 6.2]);
+        }
+        // USB-C Connector
+        translate([TIMER_SIZE_X - 2 - 15 -2, TIMER_BACK_SIZE_Y - 2, 15]) {
+            translate([15/2, -10, 3.5]) {
+                rotate([270, 0, 0]) cylinder(d=3.2, h=80, $fn=190);
+            }
+            translate([15/2, -10, 35-3.5]) {
+                rotate([270, 0, 0]) cylinder(d=3.2, h=80, $fn=190);
+            }
+            translate([1.5, -10, 7.5]) {
+                cube([12, 30, 20]);
+            }
+        }
+    }       
+    translate([2, TIMER_BACK_SIZE_Y - 2 - 8, 3.5]) {
+        mutter_halter();
+    }
+    translate([TIMER_SIZE_X - 2-8, TIMER_BACK_SIZE_Y - 2 - 8, 3.5]) {
+        mutter_halter();
+    }
+    /*
+    // Print the USB- Connecter extra mount it via screws
+    translate([TIMER_SIZE_X - 2 - 15 - 2, TIMER_BACK_SIZE_Y - 2, 15]) {
+        rotate([180, 270, 0]) usb_c_breakout_case_holder();
+    }
+    */
+}
+
+translate([120, 0, 0]) {
+    timer_back();
+}
 
