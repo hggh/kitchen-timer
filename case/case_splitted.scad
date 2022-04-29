@@ -271,12 +271,6 @@ module timer_back() {
         }
         // USB-C Connector
         translate([TIMER_SIZE_X - 2 - 15 -2, TIMER_BACK_SIZE_Y - 2, 15]) {
-            translate([15/2, -10, 3.5]) {
-                rotate([270, 0, 0]) cylinder(d=3.2, h=80, $fn=190);
-            }
-            translate([15/2, -10, 35-3.5]) {
-                rotate([270, 0, 0]) cylinder(d=3.2, h=80, $fn=190);
-            }
             translate([1.5, -10, 7.5]) {
                 cube([12, 30, 20]);
             }
@@ -288,12 +282,17 @@ module timer_back() {
     translate([TIMER_SIZE_X - 2-8, TIMER_BACK_SIZE_Y - 2 - 8, 3.5]) {
         mutter_halter();
     }
-    /*
+
     // Print the USB- Connecter extra mount it via screws
     translate([TIMER_SIZE_X - 2 - 15 - 2, TIMER_BACK_SIZE_Y - 2, 15]) {
-        rotate([180, 270, 0]) usb_c_breakout_case_holder();
+        translate([15/2, -6, 3.5]) {
+            rotate([270, 0, 0]) cylinder(d=3.0, h=6, $fn=190);
+        }
+        translate([15/2, -6, 35-3.5]) {
+            rotate([270, 0, 0]) cylinder(d=3.0, h=6, $fn=190);
+        }
+        //rotate([180, 270, 0]) usb_c_breakout_case_holder();
     }
-    */
 }
 
 translate([120, 0, 0]) {
