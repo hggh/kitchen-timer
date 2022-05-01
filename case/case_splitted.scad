@@ -36,97 +36,6 @@ module floor_plate() {
     }
 }
 
-
-module back_inlay() {
-    difference() {
-            cube([BOX_SIZE_X-4, BOX_SIZE_BACK_LOWER_Y-4, 21]);
-            rotate([55, 0, 0]) {
-                translate([-1, 0, 0]) {
-                    cube([BOX_SIZE_X+2, 50, 60]);
-                }
-            }
-        }
-}
-
-
-module back_top() {
-    translate([2, 30, 14]) {
-        cube([2, 3, 40]);
-    }
-    union() {
-        difference() {
-            cube([BOX_SIZE_X, BOX_SIZE_BACK_LOWER_Y, BOX_SIZE_LOWER_Z]);
-            translate([2, -2, -1]) {
-                cube([BOX_SIZE_X-4, BOX_SIZE_BACK_LOWER_Y, BOX_SIZE_LOWER_Z-2]);
-                translate([0, 4, 0]) {
-                    cube([BOX_SIZE_X-4, BOX_SIZE_BACK_LOWER_Y -4, BOX_SIZE_LOWER_Z+2]);
-                }
-            }
-            translate([2, -2, BOX_SIZE_LOWER_Z]) {
-                cube([BOX_SIZE_X-4, BOX_SIZE_BACK_LOWER_Y, 2]);
-            }
-        }
-        translate([0, 0, BOX_SIZE_LOWER_Z]) {
-            difference() {
-                cube([BOX_SIZE_X, BOX_SIZE_BACK_LOWER_Y, BOX_SIZE_LOWER_Z]);
-                rotate([55, 0, 0]) {
-                    translate([-1, 0, 0]) {
-                        cube([BOX_SIZE_X+2, 50, BOX_SIZE_LOWER_Z]);
-                    }
-                }
-                // display
-                translate([DISPLAY_POS_X, BOX_SIZE_LOWER_Z/2, 0]) {
-                    rotate([55, 0, 0]) {
-                        cube([DISPLAY_SIZE_X, 14.5, 20]);
-                    }
-                }
-                translate([2, 2, -1]) {
-                    back_inlay();
-                }
-            }
-        }
-        // klebefläche
-        translate([2, -4, BOX_SIZE_BACK_LOWER_Y -11 ]) {
-            cube([BOX_SIZE_X-4, 6, 2]);
-        }
-    }
-}
-
-module back() {
-    union() {
-        difference() {
-            back_top();
-            // schalter
-            translate([10, BOX_SIZE_LOWER_Z - 2, 41.8]) {
-                cube([11.6, 10, 6.2]);
-            }
-
-            translate([2, 4, 23]) {
-                cube([BOX_SIZE_X-4, 24, 4]);
-            }
-            translate([BOX_SIZE_X-8, 56-28, 22 - 4]) {
-                cube([6, 40, 15]);
-            }
-
-        }
-        translate([2, BOX_SIZE_BACK_LOWER_Y- 2 - 8, 3.5]) {
-            mutter_halter();
-        }
-        translate([BOX_SIZE_X-2-8, BOX_SIZE_BACK_LOWER_Y-2-8, 3.5]) {
-            mutter_halter();
-        }
-        translate([BOX_SIZE_X - 6 - 2, BOX_SIZE_BACK_LOWER_Y - 2, 32]) {
-            rotate([90, 180, 90]) mico_usb_breakout_holder();
-        }
-    }
-}
-
-
-
-
-
-
-
 module mutter_halter() {
     difference() {
         cube([8, 8, 6]);
@@ -198,20 +107,6 @@ module front() {
         }
     }
 }
-
-translate([0, -80, 0]) {
-    front();
-}
-
-translate([2.25, 50, -1]) {
-    //floor_plate();
-}
-
-
-//back();
-//
-// ============================================ NEW
-//
 
 TIMER_SIZE_X = 96;
 TIMER_BACK_SIZE_Y = 37;
@@ -295,7 +190,18 @@ module timer_back() {
     }
 }
 
-translate([120, 0, 0]) {
+translate([0, 0, 0]) {
     timer_back();
 }
 
+translate([0, -80, 0]) {
+    front();
+}
+
+translate([2.25, 50, -1]) {
+    floor_plate();
+}
+
+translate([TIMER_SIZE_X - 2 - 15 - 2, 50, 15]) {
+    rotate([180, 270, 0]) usb_c_breakout_case_holder();
+}
