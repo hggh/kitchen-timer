@@ -13,29 +13,6 @@ DISPLAY_POS_X = 10;
 DISPLAY_SIZE_X = 30.9;
 
 
-
-
-
-module floor_plate() {
-    size_x = BOX_SIZE_X - 4;
-    size_y = BOX_SIZE_LOWER_Y + BOX_SIZE_BACK_LOWER_Y - 4;
-    difference() {
-        translate([0.5, 0.5, 0]) cube([size_x - 1, size_y - 1, 2]);
-        translate([4, 4, -1 ]) cylinder(d=3.2, h=4, $fn=80);
-        translate([4, size_y - 4, -1 ]) cylinder(d=3.2, h=4, $fn=80);
-        translate([size_x-4, 4, -1 ]) cylinder(d=3.2, h=4, $fn=80);
-        translate([size_x-4, size_y - 3.5, -1 ]) cylinder(d=3.2, h=4, $fn=80);
-
-        translate([-0.1, BOX_SIZE_LOWER_Y-10 -4.5, -1]) {
-            cube([2.6, 26, 4]);
-        }
-
-        translate([size_x-2.5, BOX_SIZE_LOWER_Y-10 -4.5, -1]) {
-            cube([2.6, 26, 4]);
-        }
-    }
-}
-
 module mutter_halter() {
     difference() {
         cube([8, 8, 6]);
@@ -111,6 +88,27 @@ module front() {
 TIMER_SIZE_X = 96;
 TIMER_BACK_SIZE_Y = 37;
 TIMER_BACK_TOP_SIZE_Z = 28;
+
+
+module floor_plate() {
+    size_x = TIMER_SIZE_X - 4;
+    size_y = BOX_SIZE_LOWER_Y + TIMER_BACK_SIZE_Y - 4;
+    difference() {
+        translate([0.5, 0.5, 0]) cube([size_x - 1, size_y - 1, 2]);
+        translate([4, 4, -1 ]) cylinder(d=3.2, h=4, $fn=80);
+        translate([4, size_y - 4, -1 ]) cylinder(d=3.2, h=4, $fn=80);
+        translate([size_x-4, 4, -1 ]) cylinder(d=3.2, h=4, $fn=80);
+        translate([size_x-4, size_y - 3.5, -1 ]) cylinder(d=3.2, h=4, $fn=80);
+
+        translate([-0.1, BOX_SIZE_LOWER_Y-10 -4.5, -1]) {
+            cube([2.6, 26, 4]);
+        }
+
+        translate([size_x-2.5, BOX_SIZE_LOWER_Y-10 -4.5, -1]) {
+            cube([2.6, 26, 4]);
+        }
+    }
+}
 
 
 module timer_back_case() {
