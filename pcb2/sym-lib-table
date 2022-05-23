@@ -1,0 +1,6 @@
+(sym_lib_table
+  (lib (name kitchen-timer-rescue)(type Legacy)(uri ${KIPRJMOD}/kitchen-timer-rescue.lib)(options "")(descr ""))
+  (lib (name fs8205a)(type Legacy)(uri /home/jonas/entwicklung/kicad-libraries/fs8205a.lib)(options "")(descr ""))
+  (lib (name tp4056)(type Legacy)(uri /home/jonas/entwicklung/kicad-libraries/tp4056.lib)(options "")(descr ""))
+  (lib (name dw01a)(type Legacy)(uri /home/jonas/entwicklung/kicad-libraries/dw01a.lib)(options "")(descr ""))
+)
