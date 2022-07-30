@@ -7,6 +7,7 @@
 #include <Bounce2.h>
 
 #include <Voltage.h>
+#include <TP4056.h>
 
 #include <Menu7Seg.h>
 
@@ -14,15 +15,22 @@
 #define RT_SW 2
 #define RT_CLK 3
 #define RT_DT 7
-#define DISPLAY_CLK 8
-#define DISPLAY_DIO 9
-#define ENABLE_LCD A0
+#define DISPLAY_CLK A5
+#define DISPLAY_DIO A4
+#define ENABLE_LCD 5
+
+#define TP4056_PIN_STDBY A3
+#define TP4056_PIN_CHRG A2
+//#define TP4056_PIN_USB_PWR A0
+
+
 #define EEPROM_ADDRESS_ALARM_TIME 0
 
 TM1637Display display(DISPLAY_CLK, DISPLAY_DIO);
 Bounce debouncer = Bounce();
 Voltage voltage;
 Menu7Seg menu = Menu7Seg();
+TP4056 tp4056 = TP4056();
 
 const uint8_t LOW_BATT[] = {
   SEG_D | SEG_E | SEG_F,
@@ -30,6 +38,26 @@ const uint8_t LOW_BATT[] = {
   0x00,
   SEG_A | SEG_B | SEG_C | SEG_D | SEG_E | SEG_F | SEG_G
 };
+
+const uint8_t CHARGING_BATT[] = {
+  SEG_A | SEG_F | SEG_E | SEG_D,
+  SEG_F | SEG_G | SEG_E | SEG_B | SEG_C,
+  0x00,
+  SEG_C | SEG_D | SEG_E | SEG_F | SEG_G
+};
+
+const uint8_t FULL_BATT[] = {
+  SEG_A | SEG_F | SEG_G | SEG_E,
+  SEG_F | SEG_B | SEG_E | SEG_D | SEG_C,
+  SEG_F | SEG_E | SEG_D,
+  SEG_F | SEG_E | SEG_D,
+};
+
+#define TIMER_MODE_NOTHING 0
+#define TIMER_MODE_TIMER_ACTIVE 1
+#define TIMER_MODE_FULL_BATT 2
+#define TIMER_MODE_MENU_ACTIVE 2
+
 const double battery_low = 2.9;
 
 unsigned long buttonPressTimeStamp;
@@ -40,9 +68,11 @@ volatile uint8_t clk_last = 0;
 short timer_secs_last_start = 300;
 volatile short timer_secs_last_pos = 99;
 volatile short timer_secs = 300;
-volatile short timer_active = 0;
 volatile short play_sound_status = 0;
 volatile short display_enabled = 0;
+volatile short timer_mode = TIMER_MODE_NOTHING;
+volatile bool update_display = true;
+volatile bool wakeup_via_tp4056 = false;
 
 uint8_t setting_alarm_time_seconds = 20;
 bool button_long_toggle = false;
@@ -91,7 +121,7 @@ void goto_sleep() {
 
 void timer_up() {
   // if timer is running you can not change the value
-  if (timer_active == 1) {
+  if (timer_mode == TIMER_MODE_TIMER_ACTIVE) {
     return;
   }
   if (menu.active()) {
@@ -100,6 +130,7 @@ void timer_up() {
   }
 
   timer_secs_last_pos = timer_secs;
+  update_display = true;
   timer_secs += 30;
 
   if (timer_secs > 5401) {
@@ -109,7 +140,7 @@ void timer_up() {
 
 void timer_down() {
   // if timer is running you can not change the value
-  if (timer_active == 1) {
+  if (timer_mode == TIMER_MODE_TIMER_ACTIVE) {
     return;
   }
   if (menu.active()) {
@@ -118,6 +149,7 @@ void timer_down() {
   }
 
   timer_secs_last_pos = timer_secs;
+  update_display = true;
   timer_secs -= 30;
 
   if (timer_secs == 0) {
@@ -156,6 +188,16 @@ void rt_int_clk() {
   }
 }
 
+ISR(PCINT1_vect) {
+  enable_display();
+  wakeup_via_tp4056 = true;
+  wakeup_time = millis();
+
+  if (tp4056.is_charging() == false && tp4056.is_charged() == false) {
+    update_display = true;
+  }
+}
+
 void disable_timer() {
   noInterrupts();
   GTCCR |= (1 << TSM) | (1 << PSRASY);
@@ -167,6 +209,7 @@ void disable_timer() {
 ISR(TIMER2_COMPA_vect) {
   TCCR2B = TCCR2B;
   timer_secs_last_pos = timer_secs;
+  update_display = true;
   timer_secs--;
 
   while(ASSR & ((1<<TCN2UB) | (1<<OCR2AUB) | (1<<OCR2BUB) | (1<<TCR2AUB) | (1<<TCR2BUB)));
@@ -239,6 +282,17 @@ void setup() {
   wakeup_time = millis();
 
   menu.init(&debouncer, &display, setting_alarm_time_seconds);
+
+  tp4056.init(TP4056_PIN_CHRG, TP4056_PIN_STDBY);
+  tp4056.set_pullup();
+  tp4056.setup();
+
+  // interrupts for TP4056
+  noInterrupts();
+  PCICR |= (1 << PCIE1);
+  PCMSK1 |= (1<<PCINT10); // A2
+  PCMSK1 |= (1<<PCINT11); // A3
+  interrupts();
 }
 void loop() {
   debouncer.update();
@@ -249,25 +303,29 @@ void loop() {
   if (debouncer.read() == LOW && millis() - buttonPressTimeStamp >= 500 && button_long_toggle == true) {
     // if button is hold too long only do one action
     button_long_toggle = false;
-    if (timer_active == 1) {
+    if (timer_mode == TIMER_MODE_TIMER_ACTIVE) {
       // if timer is active and button is pressed longer, reset timer
       disable_timer();
-      timer_active = 0;
+      timer_mode = TIMER_MODE_NOTHING;
       timer_secs = timer_secs_last_start;
+      update_display = true;
     }
     else {
       if (menu.active() == false) {
         // if timer is not active and we have a long press goto menu
         menu.enable();
+        timer_mode = TIMER_MODE_MENU_ACTIVE;
       }
       else {
         // if timer is not active and we have a long press and we are inside the menu goto normal mode
         menu.disable();
+        timer_mode = TIMER_MODE_NOTHING;
+        update_display = true;
+        wakeup_time = millis();
+
         // save settings into eeprom
         setting_alarm_time_seconds = menu.get_alarm_timer_seconds();
         EEPROM.update(EEPROM_ADDRESS_ALARM_TIME, setting_alarm_time_seconds);
-
-        display.showNumberDecEx(secondsToDisplay(timer_secs), 64, false);
       }
     }
     return;
@@ -276,7 +334,7 @@ void loop() {
     menu.update();
     return;
   }
-  if (debouncer.rose() && timer_active == 0 && debouncer.previousDuration() < 400) {
+  if (debouncer.rose() && timer_mode == TIMER_MODE_NOTHING && debouncer.previousDuration() < 400) {
     // check battery level before going to timer
     if (battery_low > (double)voltage.read()) {
       display.setSegments(LOW_BATT);
@@ -288,24 +346,53 @@ void loop() {
     // if button is pressed and timer is not active, start countdown
     play(BUZZER_PIN, 3000, 100);
     timer_secs_last_start = timer_secs;
-    timer_active = 1;
+    timer_mode = TIMER_MODE_TIMER_ACTIVE;
     setup_timer();
   }
-  if (timer_active == 1) {
+  if (timer_mode == TIMER_MODE_TIMER_ACTIVE) {
     if (timer_secs == 0) {
       disable_timer();
       display.showNumberDecEx(0, 64, true);
-      timer_active = 0;
+      timer_mode = TIMER_MODE_NOTHING;
       timer_secs = timer_secs_last_start;
       play_sound();
-      goto_sleep();
+
+      // timer is finished, we update display with the last timer pos
+      // also set wakeup_via_tp4056 to update display if usb cable is connected
+      wakeup_time = millis();
+      update_display = true;
+      wakeup_via_tp4056 = true;
     }
   }
-  if (timer_secs_last_pos != timer_secs) {
+
+  if (update_display == true) {
+    update_display = false;
     display.showNumberDecEx(secondsToDisplay(timer_secs), 64, false);
   }
-  if (timer_active == 0 && millis() - wakeup_time >= (10 * 1000)) {
-    // if timer is not active and no user action within 10s, goto sleep
+
+  // if usb cable is connected and timer is not running we display chg or full message
+  if (wakeup_via_tp4056 == true) {
+    wakeup_via_tp4056 = false;
+    if (timer_mode == TIMER_MODE_NOTHING) {
+      if (tp4056.is_charged() == true) {
+        display.setSegments(FULL_BATT);
+      }
+      if (tp4056.is_charging() == true) {
+        display.setSegments(CHARGING_BATT);
+      }
+    }
+  }
+
+  if (tp4056.is_charging() == false && tp4056.is_charged() == false && timer_mode == TIMER_MODE_NOTHING && millis() - wakeup_time >= (10 * 1000)) {
+    // if timer is not active and no user action within 10s and not charging and not fully charged => goto sleep
     goto_sleep();
+  }
+  if (timer_mode == TIMER_MODE_NOTHING && millis() - wakeup_time >= (5 * 1000) && tp4056.is_charged() == true) {
+    // if nothing is active and buttons / encoder is not used and battery is full, display message
+    display.setSegments(FULL_BATT);
+  }
+  if (timer_mode == TIMER_MODE_NOTHING && millis() - wakeup_time >= (5 * 1000) && tp4056.is_charging() == true) {
+    // if nothing is active and buttons / encoder is not used and battery is full, display message
+    display.setSegments(CHARGING_BATT);
   }
 }
