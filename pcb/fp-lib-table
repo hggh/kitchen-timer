@@ -1,4 +1,0 @@
-(fp_lib_table
-  (lib (name pcb)(type KiCad)(uri /home/jonas/entwicklung/kitchen-timer/pcb)(options "")(descr ""))
-  (lib (name buzzer)(type KiCad)(uri /home/jonas/entwicklung/kicad-libraries/buzzer.pretty)(options "")(descr ""))
-)
