@@ -904,7 +904,7 @@ Connection ~ 650  6150
 Wire Wire Line
 	650  6150 650  6200
 Wire Wire Line
-	1350 5050 1350 5200
+	1350 5050 1350 5100
 $Comp
 L power:GND #PWR0105
 U 1 1 6265FCF4
@@ -918,4 +918,13 @@ F 3 "" H 1350 5550 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	1350 5500 1350 5550
+Wire Wire Line
+	1350 5100 5150 5100
+Wire Wire Line
+	5150 5100 5150 3200
+Wire Wire Line
+	5150 3200 3550 3200
+Connection ~ 1350 5100
+Wire Wire Line
+	1350 5100 1350 5200
 $EndSCHEMATC
